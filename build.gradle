@@ -14,7 +14,12 @@ repositories {
 
 dependencies {
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+	//    runtimeOnly 'postgresql:postgresql:9.1-901-1.jdbc4'
+	runtimeOnly 'org.postgresql:postgresql:42.2.16'
+	runtimeOnly 'org.flywaydb:flyway-core:6.3.3'
 }
 
 test {
