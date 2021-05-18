@@ -5,11 +5,13 @@ import org.internship.dating.bot.bot.common.BotCommand;
 import org.internship.dating.bot.bot.common.TelegramUpdateMessage;
 import org.internship.dating.bot.bot.tointernship.commands.ProjectAddCommand;
 import org.internship.dating.bot.bot.tointernship.commands.ProjectDeleteCommand;
+import org.internship.dating.bot.bot.tointernship.commands.SendRequestCommand;
 import org.internship.dating.bot.config.ToInternshipDatingBotSettings;
 import org.internship.dating.bot.model.BotUser;
 import org.internship.dating.bot.model.Project;
 import org.internship.dating.bot.model.UserState;
 import org.internship.dating.bot.model.UserType;
+import org.internship.dating.bot.service.ProjectRequestService;
 import org.internship.dating.bot.service.ProjectService;
 import org.internship.dating.bot.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -28,12 +30,17 @@ public class ToInternshipDatingBot extends SimpleLongPollingBot<ToInternshipDati
 
     private final ProjectService projectService;
     private final UserService userService;
+    private final ProjectRequestService requestService;
 
     @Autowired
-    public ToInternshipDatingBot(ToInternshipDatingBotSettings settings, ProjectService projectService, UserService userService) {
+    public ToInternshipDatingBot(ToInternshipDatingBotSettings settings,
+                                 ProjectService projectService,
+                                 UserService userService,
+                                 ProjectRequestService requestService) {
         super(settings, ToInternshipDatingBot.class);
         this.projectService = projectService;
         this.userService = userService;
+        this.requestService = requestService;
     }
 
     @Override
@@ -74,9 +81,18 @@ public class ToInternshipDatingBot extends SimpleLongPollingBot<ToInternshipDati
             case DELETE_PROJECT:
                 executeDeleteProject(userId, chatId, command);
                 break;
+            case SEND_PROJECT_REQUEST:
+                executeSendProjectRequest(userId, chatId, command);
+                break;
             default:
                 log.error("Unsupported command: command={}", command);
         }
+    }
+
+    private void executeSendProjectRequest(long userId, Long chatId, BotCommand<CommandName> command) {
+        Long projectId = SendRequestCommand.parseData(command.raw());
+        requestService.saveRequest(String.valueOf(userId), projectId);
+        sendDone(chatId);
     }
 
     private void executeDeleteProject(long userId, Long chatId, BotCommand<CommandName> command) {

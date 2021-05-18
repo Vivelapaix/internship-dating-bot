@@ -19,6 +19,8 @@ public enum CommandName {
 
     EDIT_PROJECT("edit_project"),
 
+    SEND_PROJECT_REQUEST("send_project_request"),
+
     ;
 
     private static final Map<String, CommandName> commandByName;
