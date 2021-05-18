@@ -13,7 +13,7 @@ import static org.internship.dating.bot.bot.tointernship.commands.ProjectAddComm
 public class ProjectAddCommand {
 
     private static Pattern COMMAND_PATTERN = Pattern.compile(
-        "^/" + CommandName.ADD.name + " (?<title>(([\\S]+)|([\"'“”‘’].+[\"'“”‘’]))) " +
+        "^/" + CommandName.CREATE_PROJECT.name + " (?<title>(([\\S]+)|([\"'“”‘’].+[\"'“”‘’]))) " +
             "(?<presentation>(([\\S]+)|([\"'“”‘’].+[\"'“”‘’]))) " +
             "(?<description>(([\\S]+)|([\"'“”‘’].+[\"'“”‘’]))) " +
             "(?<testTask>(([\\S]+)|([\"'“”‘’].+[\"'“”‘’])))$"

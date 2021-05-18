@@ -4,10 +4,14 @@ import org.internship.dating.bot.bot.SimpleLongPollingBot;
 import org.internship.dating.bot.bot.common.BotCommand;
 import org.internship.dating.bot.bot.common.TelegramUpdateMessage;
 import org.internship.dating.bot.bot.tointernship.commands.ProjectAddCommand;
+import org.internship.dating.bot.bot.tointernship.commands.ProjectDeleteCommand;
 import org.internship.dating.bot.config.ToInternshipDatingBotSettings;
+import org.internship.dating.bot.model.BotUser;
 import org.internship.dating.bot.model.Project;
+import org.internship.dating.bot.model.UserState;
 import org.internship.dating.bot.model.UserType;
 import org.internship.dating.bot.service.ProjectService;
+import org.internship.dating.bot.service.UserService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.telegram.telegrambots.meta.api.methods.send.SendMessage;
@@ -16,17 +20,20 @@ import org.telegram.telegrambots.meta.exceptions.TelegramApiException;
 import java.util.List;
 
 import static java.util.stream.Collectors.joining;
+import static org.internship.dating.bot.model.BotUser.Builder.user;
 import static org.internship.dating.bot.model.Project.Builder.project;
 
 @Component
 public class ToInternshipDatingBot extends SimpleLongPollingBot<ToInternshipDatingBot, ToInternshipDatingBotSettings> {
 
     private final ProjectService projectService;
+    private final UserService userService;
 
     @Autowired
-    public ToInternshipDatingBot(ToInternshipDatingBotSettings settings, ProjectService projectService) {
+    public ToInternshipDatingBot(ToInternshipDatingBotSettings settings, ProjectService projectService, UserService userService) {
         super(settings, ToInternshipDatingBot.class);
         this.projectService = projectService;
+        this.userService = userService;
     }
 
     @Override
@@ -55,15 +62,27 @@ public class ToInternshipDatingBot extends SimpleLongPollingBot<ToInternshipDati
 
     private void executeCommand(long userId, Long chatId, BotCommand<CommandName> command) {
         switch (command.name()) {
-            case ALL:
+            case START:
+                saveNewBotUser(userId);
+                break;
+            case VIEW_ALL_PROJECTS:
                 executeAllCommand(chatId);
                 break;
-            case ADD:
+            case CREATE_PROJECT:
                 executeAddCommand(userId, chatId, command);
+                break;
+            case DELETE_PROJECT:
+                executeDeleteProject(userId, chatId, command);
                 break;
             default:
                 log.error("Unsupported command: command={}", command);
         }
+    }
+
+    private void executeDeleteProject(long userId, Long chatId, BotCommand<CommandName> command) {
+        Long projectId = ProjectDeleteCommand.parseData(command.raw());
+        projectService.deleteProject(projectId);
+        sendDone(chatId);
     }
 
     private void executeAllCommand(Long chatId) {
@@ -87,13 +106,14 @@ public class ToInternshipDatingBot extends SimpleLongPollingBot<ToInternshipDati
         sendDone(chatId);
     }
 
-    /*
-    private void executeLinkAddCommand(Long chatId, BotCommand<CommandName> command) {
-        LinkAddCommand.LinkAddCommandData data = ProjectAddCommand.parseData(command.raw());
-        linkService.add(data.url(), false);
-        sendDone(chatId);
+    private void saveNewBotUser(long userId) {
+        BotUser userToAdd = user()
+            .name(String.valueOf(userId))
+            .userType(UserType.STUDENT)
+            .userState(UserState.NEW)
+            .build();
+        userService.saveUser(userToAdd);
     }
-    */
 
     private String buildListProjectText(List<Project> projects) {
         if (projects.isEmpty()) {

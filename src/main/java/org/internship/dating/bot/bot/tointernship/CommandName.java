@@ -9,9 +9,15 @@ import static java.util.stream.Collectors.toMap;
 
 public enum CommandName {
 
-    ALL("all"),
+    START("start"),
 
-    ADD("add"),
+    VIEW_ALL_PROJECTS("view_all_projects"),
+
+    CREATE_PROJECT("create_project"),
+
+    DELETE_PROJECT("delete_project"),
+
+    EDIT_PROJECT("edit_project"),
 
     ;
 

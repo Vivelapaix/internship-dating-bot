@@ -14,7 +14,6 @@ import java.sql.SQLException;
 import java.util.List;
 import java.util.Map;
 
-import static java.util.stream.Collectors.joining;
 import static org.internship.dating.bot.model.Project.Builder.project;
 
 @Service
@@ -42,9 +41,16 @@ public class ProjectDao {
         );
     }
 
+    public void changeProjectState(long projectId, ProjectState projectState) {
+        jdbcTemplate.update(
+            "UPDATE project SET state = :state WHERE id = :id",
+            Map.of("id", projectId, "state", projectState.getValue())
+        );
+    }
+
     public List<Project> fetchAll() {
         return jdbcTemplate.query(
-            "SELECT id, title, presentation, description, test_task FROM project ORDER BY id",
+            "SELECT id, title, presentation, description, test_task FROM project where state = 0 ORDER BY id",
             (rs, __) -> readProject(rs)
         );
     }
