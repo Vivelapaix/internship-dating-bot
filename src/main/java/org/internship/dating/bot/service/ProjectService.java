@@ -28,6 +28,10 @@ public class ProjectService {
         txTemplate.executeWithoutResult(__ -> projectDao.changeProjectState(projectId, ProjectState.DELETED));
     }
 
+    public Project getProjectById(long projectId) {
+        return projectDao.fetchById(projectId);
+    }
+
     public List<Project> getAllProjects() {
         return projectDao.fetchAll();
     }

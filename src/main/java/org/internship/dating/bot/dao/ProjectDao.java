@@ -69,6 +69,16 @@ public class ProjectDao {
         );
     }
 
+    public Project fetchById(long projectId) {
+        return jdbcTemplate.queryForObject(
+            "SELECT id, title, presentation, description, test_task FROM project WHERE id = :id",
+            Map.of(
+                "id", projectId
+            ),
+            (rs, __) -> readProject(rs)
+        );
+    }
+
     private Project readProject(ResultSet rs) throws SQLException {
         return project()
             .id(rs.getLong("id"))
