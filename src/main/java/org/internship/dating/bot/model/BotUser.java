@@ -3,12 +3,14 @@ package org.internship.dating.bot.model;
 public class BotUser {
     private final long id;
     private final String uid;
+    private final String name;
     private final UserType userType;
     private final UserState userState;
 
-    public BotUser(long id, String name, UserType userType, UserState userState) {
+    public BotUser(long id, String uid, String name, UserType userType, UserState userState) {
         this.id = id;
-        this.uid = name;
+        this.uid = uid;
+        this.name = name;
         this.userType = userType;
         this.userState = userState;
     }
@@ -29,9 +31,14 @@ public class BotUser {
         return userState;
     }
 
+    public String getName() {
+        return name;
+    }
+
     public static class Builder {
         private long id;
         private String uid;
+        private String name;
         private UserType userType;
         private UserState userState;
 
@@ -52,6 +59,11 @@ public class BotUser {
             return this;
         }
 
+        public BotUser.Builder name(String name) {
+            this.name = name;
+            return this;
+        }
+
         public BotUser.Builder userType(UserType userType) {
             this.userType = userType;
             return this;
@@ -66,6 +78,7 @@ public class BotUser {
             return new BotUser(
                 id,
                 uid,
+                name,
                 userType,
                 userState
             );

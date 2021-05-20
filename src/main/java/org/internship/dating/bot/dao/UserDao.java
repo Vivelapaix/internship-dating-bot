@@ -18,9 +18,10 @@ public class UserDao {
 
     public void insert(@Nonnull BotUser botUser) {
         jdbcTemplate.update(
-            "INSERT INTO bot_user (tg_uid, type, state) VALUES (:tg_uid, :type, :state)",
+            "INSERT INTO bot_user (tg_uid, tg_login, type, state) VALUES (:tg_uid, :tg_login, :type, :state)",
             Map.of(
                 "tg_uid", botUser.getUid(),
+                "tg_login", botUser.getName(),
                 "type", botUser.getUserType().getValue(),
                 "state", botUser.getUserState().getValue()
             )

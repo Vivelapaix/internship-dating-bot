@@ -78,6 +78,7 @@ public class ToInternshipDatingBot extends SimpleLongPollingBot<ToInternshipDati
             message.asChannelBotMessage(CommandName::byName).ifPresentOrElse(
                 command -> executeCommand(
                     message.raw().getMessage().getFrom().getId().toString(),
+                    message.raw().getMessage().getFrom().getUserName(),
                     message.raw().getMessage().getChatId(),
                     command
                 ),
@@ -126,7 +127,7 @@ public class ToInternshipDatingBot extends SimpleLongPollingBot<ToInternshipDati
         }
     }
 
-    private void executeCommand(String userId, Long chatId, BotCommand<CommandName> command) {
+    private void executeCommand(String userId, String login, Long chatId, BotCommand<CommandName> command) {
         switch (command.name()) {
             case VIEW_ALL_PROJECTS:
                 sendProjectsKeyboard(chatId);
@@ -138,7 +139,7 @@ public class ToInternshipDatingBot extends SimpleLongPollingBot<ToInternshipDati
                 sendCuratorProjectsKeyboard(chatId, userId);
                 break;
             case REGISTER:
-                saveNewBotUser(userId);
+                saveNewBotUser(userId, login);
                 break;
             case CREATE_PROJECT:
                 executeAddCommand(userId, chatId, command);
@@ -302,9 +303,10 @@ public class ToInternshipDatingBot extends SimpleLongPollingBot<ToInternshipDati
         sendDone(chatId);
     }
 
-    private void saveNewBotUser(String userId) {
+    private void saveNewBotUser(String userId, String login) {
         BotUser userToAdd = user()
             .uid(userId)
+            .name(login)
             .userType(UserType.STUDENT)
             .userState(UserState.NEW)
             .build();
