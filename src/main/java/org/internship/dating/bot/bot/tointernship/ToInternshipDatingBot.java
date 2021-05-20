@@ -31,11 +31,13 @@ import java.util.stream.StreamSupport;
 
 import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
+import static org.internship.dating.bot.bot.tointernship.ProjectCallbackDataType.APPROVE_USER_ON_PROJECT;
 import static org.internship.dating.bot.bot.tointernship.ProjectCallbackDataType.CANCEL_PROJECT_REQUEST;
 import static org.internship.dating.bot.bot.tointernship.ProjectCallbackDataType.CHOOSE_PROJECT;
 import static org.internship.dating.bot.bot.tointernship.ProjectCallbackDataType.DELETE_CURATOR_PROJECT;
 import static org.internship.dating.bot.bot.tointernship.ProjectCallbackDataType.EDIT_CURATOR_PROJECT_INFO;
 import static org.internship.dating.bot.bot.tointernship.ProjectCallbackDataType.GET_CURATOR_PROJECT_INFO;
+import static org.internship.dating.bot.bot.tointernship.ProjectCallbackDataType.GET_USER_PROJECT_REQUEST_INFO;
 import static org.internship.dating.bot.bot.tointernship.ProjectCallbackDataType.PROJECT_INFO;
 import static org.internship.dating.bot.bot.tointernship.ProjectCallbackDataType.PROJECT_REQUEST_INFO;
 import static org.internship.dating.bot.bot.tointernship.ProjectCallbackDataType.REQUEST_PROJECT;
@@ -98,6 +100,9 @@ public class ToInternshipDatingBot extends SimpleLongPollingBot<ToInternshipDati
 
     private void executeProjectCallback(Long chatId, Integer userId, ProjectCallbackDataType callbackDataType, List<String> params, Message original) {
         switch (callbackDataType) {
+            case GET_USER_PROJECT_REQUEST_INFO:
+                sendUserProjectRequestInfo(chatId, Long.parseLong(params.get(0)), params.get(1));
+                break;
             case DELETE_CURATOR_PROJECT:
                 deleteCuratorProject(chatId, Long.parseLong(params.get(0)), params.get(1));
                 break;
@@ -122,6 +127,9 @@ public class ToInternshipDatingBot extends SimpleLongPollingBot<ToInternshipDati
             case CANCEL_PROJECT_REQUEST:
                 cancelProjectRequest(chatId, Long.parseLong(params.get(0)));
                 break;
+            case APPROVE_USER_ON_PROJECT:
+                executeApproveUserOnProject(chatId, params.get(0), Long.parseLong(params.get(1)));
+                break;
             default:
                 executeUnsupportedCommand(chatId);
         }
@@ -137,6 +145,9 @@ public class ToInternshipDatingBot extends SimpleLongPollingBot<ToInternshipDati
                 break;
             case VIEW_MY_PROJECTS:
                 sendCuratorProjectsKeyboard(chatId, userId);
+                break;
+            case VIEW_PROJECT_REQUEST_TO_MY_PROJECTS:
+                executeViewProjectRequestToMyProjects(chatId, userId);
                 break;
             case REGISTER:
                 saveNewBotUser(userId, login);
@@ -177,6 +188,17 @@ public class ToInternshipDatingBot extends SimpleLongPollingBot<ToInternshipDati
         sendMessage(message);
     }
 
+    private void sendUserProjectRequestInfo(Long chatId, long projectId, String userId) {
+        Project project = projectService.getProjectById(projectId);
+        SendMessage message = new SendMessage(chatId, buildProjectText(project));
+        ImmutableList<InlineKeyboardButton> actionButtons = ImmutableList.of(
+            actionButton("Назначить на проект", APPROVE_USER_ON_PROJECT.name + " " + userId + " " + projectId),
+            actionButton("Отклонить", "UNCOMPLETED")
+        );
+        message.setReplyMarkup(projectRequestKeyboard(projectId, userId, actionButtons));
+        sendMessage(message);
+    }
+
     private void deleteCuratorProject(Long chatId, long projectId, String userId) {
         projectService.deleteProject(projectId);
         sendCuratorProjectsKeyboard(chatId, userId);
@@ -185,6 +207,12 @@ public class ToInternshipDatingBot extends SimpleLongPollingBot<ToInternshipDati
     private void sendProjectsKeyboard(Long chatId) {
         SendMessage message = new SendMessage(chatId, "Список проектов:");
         message.setReplyMarkup(chooseProjectsKeyboard());
+        sendMessage(message);
+    }
+
+    private void executeViewProjectRequestToMyProjects(Long chatId, String userId) {
+        SendMessage message = new SendMessage(chatId, "Список откликнувшихся:");
+        message.setReplyMarkup(chooseRequestedUserToMyProjectsKeyboard(userId));
         sendMessage(message);
     }
 
@@ -265,6 +293,21 @@ public class ToInternshipDatingBot extends SimpleLongPollingBot<ToInternshipDati
         return markup;
     }
 
+    private InlineKeyboardMarkup chooseRequestedUserToMyProjectsKeyboard(String projectAuthorId) {
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<ProjectRequest> requests = requestService.getUserRequestsByProjectAuthorId(projectAuthorId);
+        Iterable<List<InlineKeyboardButton>> buttons = Iterables.partition(
+            () -> requests.stream()
+                .map(request ->
+                    inlineKeyboardButton(request.getRequestAuthorName(),
+                        GET_USER_PROJECT_REQUEST_INFO.name + " " + request.getProjectId() + " " + request.getRequestAuthorId()))
+                .iterator(),
+            1
+        );
+        markup.setKeyboard(StreamSupport.stream(buttons.spliterator(), false).collect(toList()));
+        return markup;
+    }
+
     private InlineKeyboardMarkup projectRequestKeyboard(long projectId, String userId, ImmutableList<InlineKeyboardButton> actionButtons) {
         InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
         markup.setKeyboard(singletonList(actionButtons));
@@ -280,6 +323,11 @@ public class ToInternshipDatingBot extends SimpleLongPollingBot<ToInternshipDati
     private void executeSendProjectRequest(String userId, Long chatId, BotCommand<CommandName> command) {
         Long projectId = SendRequestCommand.parseData(command.raw());
         requestService.saveRequest(userId, projectId);
+        sendDone(chatId);
+    }
+
+    private void executeApproveUserOnProject(Long chatId, String userId, long projectId) {
+        requestService.approveUserToProject(userId, projectId);
         sendDone(chatId);
     }
 

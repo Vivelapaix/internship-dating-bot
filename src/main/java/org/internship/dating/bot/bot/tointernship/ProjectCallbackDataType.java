@@ -27,6 +27,10 @@ public enum ProjectCallbackDataType {
 
     CANCEL_PROJECT_REQUEST("cancel_project_request"),
 
+    GET_USER_PROJECT_REQUEST_INFO("get_user_project_request_info"),
+
+    APPROVE_USER_ON_PROJECT("approve_user_on_project"),
+
     ;
 
     private static final Map<String, ProjectCallbackDataType> commandByName;

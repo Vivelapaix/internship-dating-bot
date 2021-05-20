@@ -8,19 +8,28 @@ public class ProjectRequest {
     private final String projectPresentation;
     private final String projectDescription;
     private final String projectTestTask;
+    private final String requestAuthorId;
+    private final String requestAuthorName;
+    private final ProjectRequestState projectRequestState;
 
     public ProjectRequest(long requestId,
                           long projectId,
                           String projectTitle,
                           String projectPresentation,
                           String projectDescription,
-                          String projectTestTask) {
+                          String projectTestTask,
+                          String requestAuthorId,
+                          ProjectRequestState projectRequestState,
+                          String requestAuthorName) {
         this.requestId = requestId;
         this.projectId = projectId;
         this.projectTitle = projectTitle;
         this.projectPresentation = projectPresentation;
         this.projectDescription = projectDescription;
         this.projectTestTask = projectTestTask;
+        this.requestAuthorId = requestAuthorId;
+        this.projectRequestState = projectRequestState;
+        this.requestAuthorName = requestAuthorName;
     }
 
     public long getRequestId() {
@@ -47,6 +56,18 @@ public class ProjectRequest {
         return projectId;
     }
 
+    public ProjectRequestState getProjectRequestState() {
+        return projectRequestState;
+    }
+
+    public String getRequestAuthorId() {
+        return requestAuthorId;
+    }
+
+    public String getRequestAuthorName() {
+        return requestAuthorName;
+    }
+
     public static class Builder {
         private long requestId;
         private long projectId;
@@ -54,6 +75,9 @@ public class ProjectRequest {
         private String projectPresentation;
         private String projectDescription;
         private String projectTestTask;
+        private String requestAuthorId;
+        private ProjectRequestState projectRequestState;
+        private String requestAuthorName;
 
         public Builder() {
         }
@@ -92,6 +116,21 @@ public class ProjectRequest {
             return this;
         }
 
+        public ProjectRequest.Builder requestAuthorId(String authorId) {
+            this.requestAuthorId = authorId;
+            return this;
+        }
+
+        public ProjectRequest.Builder projectRequestState(ProjectRequestState state) {
+            this.projectRequestState = state;
+            return this;
+        }
+
+        public ProjectRequest.Builder requestAuthorName(String requestAuthorName) {
+            this.requestAuthorName = requestAuthorName;
+            return this;
+        }
+
         public ProjectRequest build() {
             return new ProjectRequest(
                 requestId,
@@ -99,7 +138,10 @@ public class ProjectRequest {
                 projectTitle,
                 projectPresentation,
                 projectDescription,
-                projectTestTask
+                projectTestTask,
+                requestAuthorId,
+                projectRequestState,
+                requestAuthorName
             );
         }
     }

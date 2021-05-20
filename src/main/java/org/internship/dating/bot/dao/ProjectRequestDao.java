@@ -2,6 +2,7 @@ package org.internship.dating.bot.dao;
 
 import org.internship.dating.bot.model.ProjectRequest;
 import org.internship.dating.bot.model.ProjectRequestState;
+import org.internship.dating.bot.model.UserType;
 import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.jdbc.core.namedparam.NamedParameterJdbcTemplate;
 import org.springframework.stereotype.Service;
@@ -38,6 +39,17 @@ public class ProjectRequestDao {
         );
     }
 
+    public void changeRequestState(String userId, long projectId, ProjectRequestState state) {
+        jdbcTemplate.update(
+            "UPDATE project_request SET state = :state WHERE tg_uid = :tg_uid and project_id = :project_id",
+            Map.of(
+                "tg_uid", userId,
+                "project_id", projectId,
+                "state", state.getValue()
+            )
+        );
+    }
+
     public List<ProjectRequest> fetchByUserId(String userId) {
         return jdbcTemplate.query(
             "SELECT p.id, p.title, p.presentation, p.description, p.test_task, pr.id request_id " +
@@ -55,6 +67,27 @@ public class ProjectRequestDao {
                 .projectPresentation(rs.getString("presentation"))
                 .projectDescription(rs.getString("description"))
                 .projectTestTask(rs.getString("test_task"))
+                .build()
+        );
+    }
+
+    public List<ProjectRequest> fetchByProjectAuthorId(String userId) {
+        return jdbcTemplate.query(
+            "SELECT bu.tg_login, pr.tg_uid, pr.project_id " +
+                "FROM project p " +
+                "INNER JOIN project_request pr " +
+                "ON p.id = pr.project_id " +
+                "INNER JOIN bot_user bu " +
+                "ON pr.tg_uid = bu.tg_uid " +
+                "WHERE p.state = 0 and p.user_type = :user_type and p.user_id = :user_id and pr.state = 0",
+            Map.of(
+                "user_type", UserType.CURATOR.getValue(),
+                "user_id", Long.parseLong(userId)
+            ),
+            (rs, __) -> projectRequest()
+                .requestAuthorId(rs.getString("tg_uid"))
+                .projectId(rs.getLong("project_id"))
+                .requestAuthorName(rs.getString("tg_login"))
                 .build()
         );
     }

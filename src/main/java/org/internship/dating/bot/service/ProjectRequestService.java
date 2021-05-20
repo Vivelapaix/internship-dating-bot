@@ -1,7 +1,6 @@
 package org.internship.dating.bot.service;
 
 import org.internship.dating.bot.dao.ProjectRequestDao;
-import org.internship.dating.bot.model.Project;
 import org.internship.dating.bot.model.ProjectRequest;
 import org.internship.dating.bot.model.ProjectRequestState;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -25,11 +24,19 @@ public class ProjectRequestService {
         txTemplate.executeWithoutResult(__ -> requestDao.insert(userName, projectId));
     }
 
+    public void approveUserToProject(String userId, long projectId) {
+        txTemplate.executeWithoutResult(__ -> requestDao.changeRequestState(userId, projectId, ProjectRequestState.APPROVED));
+    }
+
     public void deleteRequest(long requestId) {
         txTemplate.executeWithoutResult(__ -> requestDao.changeRequestState(requestId, ProjectRequestState.DELETED));
     }
 
     public List<ProjectRequest> getAllUserRequests(String userId) {
         return requestDao.fetchByUserId(userId);
+    }
+
+    public List<ProjectRequest> getUserRequestsByProjectAuthorId(String projectAuthorId) {
+        return requestDao.fetchByProjectAuthorId(projectAuthorId);
     }
 }
