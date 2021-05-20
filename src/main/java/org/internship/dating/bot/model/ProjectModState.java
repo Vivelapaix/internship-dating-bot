@@ -8,7 +8,8 @@ public enum ProjectModState {
     REVIEW(2, "проверка тестовых заданий"),
     INTERVIEW(3, "собеседования"),
     WORK(4, "в работе"),
-    RESULT(5, "проект завершен")
+    RESULT(5, "проект завершен"),
+    DELETED(6, "проект удален")
     ;
 
     private final int value;

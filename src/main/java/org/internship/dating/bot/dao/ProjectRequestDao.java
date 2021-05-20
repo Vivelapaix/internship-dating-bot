@@ -20,11 +20,11 @@ public class ProjectRequestDao {
         this.jdbcTemplate = new NamedParameterJdbcTemplate(jdbcTemplate);
     }
 
-    public void insert(String userName, long projectId) {
+    public void insert(String userId, long projectId) {
         jdbcTemplate.update(
-            "INSERT INTO project_request (user_name, project_id, state) VALUES (:user_name, :project_id, :state)",
+            "INSERT INTO project_request (tg_uid, project_id, state) VALUES (:tg_uid, :project_id, :state)",
             Map.of(
-                "user_name", userName,
+                "tg_uid", userId,
                 "project_id", projectId,
                 "state", ProjectRequestState.NEW.getValue()
             )
@@ -44,7 +44,7 @@ public class ProjectRequestDao {
                 "FROM project_request pr " +
                 "LEFT JOIN project p " +
                 "ON pr.project_id = p.id " +
-                "WHERE pr.state = 0 and p.state = 0 and pr.user_name = :user_id",
+                "WHERE pr.state = 0 and p.state = 0 and pr.tg_uid = :user_id",
             Map.of(
                 "user_id", userId
             ),

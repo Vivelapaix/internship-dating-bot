@@ -255,7 +255,7 @@ public class ToInternshipDatingBot extends SimpleLongPollingBot<ToInternshipDati
 
     private void saveNewBotUser(String userId) {
         BotUser userToAdd = user()
-            .name(userId)
+            .uid(userId)
             .userType(UserType.STUDENT)
             .userState(UserState.NEW)
             .build();
