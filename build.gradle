@@ -13,8 +13,15 @@ repositories {
 }
 
 dependencies {
+	implementation 'org.telegram:telegrambots-spring-boot-starter:4.9.1'
+	implementation 'org.apache.commons:commons-lang3:3.0'
 	implementation 'org.springframework.boot:spring-boot-starter-web'
+	implementation 'org.springframework.boot:spring-boot-starter-jdbc'
 	testImplementation 'org.springframework.boot:spring-boot-starter-test'
+
+	//    runtimeOnly 'postgresql:postgresql:9.1-901-1.jdbc4'
+	runtimeOnly 'org.postgresql:postgresql:42.2.16'
+	runtimeOnly 'org.flywaydb:flyway-core:6.3.3'
 }
 
 test {
