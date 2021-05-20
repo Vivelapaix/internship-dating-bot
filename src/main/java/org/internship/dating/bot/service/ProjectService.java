@@ -37,6 +37,10 @@ public class ProjectService {
     }
 
     public List<Project> getAllCuratorProjects(long userId) {
+        return projectDao.fetchByCurator(String.valueOf(userId));
+    }
+
+    public List<Project> getAllCuratorProjects(String userId) {
         return projectDao.fetchByCurator(userId);
     }
 

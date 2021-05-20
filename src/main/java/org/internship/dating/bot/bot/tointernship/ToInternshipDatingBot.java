@@ -33,6 +33,9 @@ import static java.util.Collections.singletonList;
 import static java.util.stream.Collectors.toList;
 import static org.internship.dating.bot.bot.tointernship.ProjectCallbackDataType.CANCEL_PROJECT_REQUEST;
 import static org.internship.dating.bot.bot.tointernship.ProjectCallbackDataType.CHOOSE_PROJECT;
+import static org.internship.dating.bot.bot.tointernship.ProjectCallbackDataType.DELETE_CURATOR_PROJECT;
+import static org.internship.dating.bot.bot.tointernship.ProjectCallbackDataType.EDIT_CURATOR_PROJECT_INFO;
+import static org.internship.dating.bot.bot.tointernship.ProjectCallbackDataType.GET_CURATOR_PROJECT_INFO;
 import static org.internship.dating.bot.bot.tointernship.ProjectCallbackDataType.PROJECT_INFO;
 import static org.internship.dating.bot.bot.tointernship.ProjectCallbackDataType.PROJECT_REQUEST_INFO;
 import static org.internship.dating.bot.bot.tointernship.ProjectCallbackDataType.REQUEST_PROJECT;
@@ -94,6 +97,12 @@ public class ToInternshipDatingBot extends SimpleLongPollingBot<ToInternshipDati
 
     private void executeProjectCallback(Long chatId, Integer userId, ProjectCallbackDataType callbackDataType, List<String> params, Message original) {
         switch (callbackDataType) {
+            case DELETE_CURATOR_PROJECT:
+                deleteCuratorProject(chatId, Long.parseLong(params.get(0)), params.get(1));
+                break;
+            case GET_CURATOR_PROJECT_INFO:
+                sendCuratorProjectInfo(chatId, Long.parseLong(params.get(0)), params.get(1));
+                break;
             case PROJECT_INFO:
                 sendProjectInfo(chatId, Long.parseLong(params.get(0)), userId.toString());
                 break;
@@ -125,6 +134,9 @@ public class ToInternshipDatingBot extends SimpleLongPollingBot<ToInternshipDati
             case VIEW_MY_PROJECT_REQUESTS:
                 sendUserProjectRequestsKeyboard(chatId, userId);
                 break;
+            case VIEW_MY_PROJECTS:
+                sendCuratorProjectsKeyboard(chatId, userId);
+                break;
             case REGISTER:
                 saveNewBotUser(userId);
                 break;
@@ -153,8 +165,24 @@ public class ToInternshipDatingBot extends SimpleLongPollingBot<ToInternshipDati
         sendMessage(message);
     }
 
+    private void sendCuratorProjectInfo(Long chatId, long projectId, String userId) {
+        Project project = projectService.getProjectById(projectId);
+        SendMessage message = new SendMessage(chatId, buildProjectText(project));
+        ImmutableList<InlineKeyboardButton> actionButtons = ImmutableList.of(
+            actionButton("Редактировать", EDIT_CURATOR_PROJECT_INFO.name + " " + projectId + " " + userId),
+            actionButton("Удалить", DELETE_CURATOR_PROJECT.name + " " + projectId + " " + userId)
+        );
+        message.setReplyMarkup(projectRequestKeyboard(projectId, userId, actionButtons));
+        sendMessage(message);
+    }
+
+    private void deleteCuratorProject(Long chatId, long projectId, String userId) {
+        projectService.deleteProject(projectId);
+        sendCuratorProjectsKeyboard(chatId, userId);
+    }
+
     private void sendProjectsKeyboard(Long chatId) {
-        SendMessage message = new SendMessage(chatId, "Список проектов");
+        SendMessage message = new SendMessage(chatId, "Список проектов:");
         message.setReplyMarkup(chooseProjectsKeyboard());
         sendMessage(message);
     }
@@ -162,6 +190,12 @@ public class ToInternshipDatingBot extends SimpleLongPollingBot<ToInternshipDati
     private void sendUserProjectRequestsKeyboard(Long chatId, String userId) {
         SendMessage message = new SendMessage(chatId, "Мои заявки на проекты:");
         message.setReplyMarkup(chooseUserProjectRequestsKeyboard(userId));
+        sendMessage(message);
+    }
+
+    private void sendCuratorProjectsKeyboard(Long chatId, String userId) {
+        SendMessage message = new SendMessage(chatId, "Мои проекты:");
+        message.setReplyMarkup(chooseCuratorProjectsKeyboard(userId));
         sendMessage(message);
     }
 
@@ -208,6 +242,21 @@ public class ToInternshipDatingBot extends SimpleLongPollingBot<ToInternshipDati
                 .map(request ->
                     inlineKeyboardButton(request.getProjectTitle(),
                         PROJECT_REQUEST_INFO.name + " " + request.getProjectId() + " " + userId + " " + request.getRequestId()))
+                .iterator(),
+            1
+        );
+        markup.setKeyboard(StreamSupport.stream(buttons.spliterator(), false).collect(toList()));
+        return markup;
+    }
+
+    private InlineKeyboardMarkup chooseCuratorProjectsKeyboard(String userId) {
+        InlineKeyboardMarkup markup = new InlineKeyboardMarkup();
+        List<Project> projects = projectService.getAllCuratorProjects(userId);
+        Iterable<List<InlineKeyboardButton>> buttons = Iterables.partition(
+            () -> projects.stream()
+                .map(project ->
+                    inlineKeyboardButton(project.getTitle(),
+                        GET_CURATOR_PROJECT_INFO.name + " " + project.getId() + " " + userId))
                 .iterator(),
             1
         );

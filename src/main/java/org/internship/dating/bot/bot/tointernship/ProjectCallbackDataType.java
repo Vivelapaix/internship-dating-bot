@@ -11,6 +11,12 @@ public enum ProjectCallbackDataType {
 
     PROJECT_INFO("project_info"),
 
+    GET_CURATOR_PROJECT_INFO("get_curator_project_info"),
+
+    EDIT_CURATOR_PROJECT_INFO("edit_curator_project_info"),
+
+    DELETE_CURATOR_PROJECT("delete_curator_project_info"),
+
     CHOOSE_PROJECT("choose_project"),
 
     REQUEST_PROJECT("request_project"),

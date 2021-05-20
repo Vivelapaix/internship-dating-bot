@@ -55,15 +55,15 @@ public class ProjectDao {
         );
     }
 
-    public List<Project> fetchByCurator(long userId) {
+    public List<Project> fetchByCurator(String userId) {
         return jdbcTemplate.query(
-            "SELECT title, presentation, description, test_task " +
+            "SELECT id, title, presentation, description, test_task " +
                 "FROM project " +
                 "WHERE state = :state and user_type = :user_type and user_id = :user_id",
             Map.of(
                 "state", ProjectState.NEW.getValue(),
                 "user_type", UserType.CURATOR.getValue(),
-                "user_id", userId
+                "user_id", Long.parseLong(userId)
             ),
             (rs, __) -> readProject(rs)
         );

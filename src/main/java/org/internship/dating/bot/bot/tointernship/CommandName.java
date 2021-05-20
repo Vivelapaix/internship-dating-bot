@@ -15,6 +15,8 @@ public enum CommandName {
 
     VIEW_MY_PROJECT_REQUESTS("view_my_project_requests"),
 
+    VIEW_MY_PROJECTS("view_my_projects"),
+
     CREATE_PROJECT("create_project"),
 
     DELETE_PROJECT("delete_project"),
